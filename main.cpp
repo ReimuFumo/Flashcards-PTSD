@@ -26,14 +26,21 @@ void Flashcards::welcome()
 
     std::cout << "Welcome to PTSD Flashcards!" << "\n";
     std::cout << "Make sure your flashcards file is inside the current directory." << "\n";
-    std::cout << "Enter 'select' to choose which file you want to revise.'" << "\n\n";
+    std::cout << "Enter 'select' to choose which file you want to revise or 'q' to exit the app." << "\n\n";
     std::cout << "If you do not know how to create one, please refer to the help manual. Enter 'help' to access the manual." << "\n\n";
     
     std::cout << "Enter command: ";
     std::cin >> action;
+    while (true)
+    {
+        if (action == "q" || action == "help" || action == "select") break;
+        std::cout << "Invalid input! Try again.\n";
+        std::cout << "Enter command: ";
+        std::cin >> action;
+    }
     std::cout << "\n";
 
-    if (action == "q") { std::cout << "Goodbye!" << "\n"; return; }
+    if (action == "q") { std::cout << "Goodbye!" << "\n"; exit(EXIT_SUCCESS); }
     else if (action == "help") help();
     else if (action == "select") selectFile();
 }
@@ -57,7 +64,7 @@ void Flashcards::help()
     {
         if (action == "back") break;
 
-        std::cout << "Invalid input! Try again." << "\n";
+        std::cout << "Invalid input! Try again.\n";
         std::cout << "Enter command: ";
         std::cin >> action;
     }
@@ -70,16 +77,20 @@ void Flashcards::selectFile()
 
     while (true)
     {
-        std::cout << "Enter the name of the file you want to select: ";
+        std::cout << "Enter the file name or 'back' to return: ";
         std::cin >> filename;
-        
-        std::ifstream file(filename);
-        if (!file) std::cout << "File \"" << filename << "\" was not found. Please enter a valid file name.\n";
+
+        if (filename == "back") return; 
         else
         {
-            std::cout << "File loaded successfully!\n";
-            insertFlashcards(filename);
-            break;
+            std::ifstream file(filename);
+            if (!file) std::cout << "File \"" << filename << "\" was not found. Please enter a valid file name.\n";
+            else
+            {
+                std::cout << "File loaded successfully!\n";
+                insertFlashcards(filename);
+                break;
+            }
         }
     }
 
