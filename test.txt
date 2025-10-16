@@ -1,3 +1,3 @@
-What is the first letter of the alphabet? | a
-What is the capital of Australia? | Canberra
-What language is spoken in Mexico? | Spanish
+What is the first letter of the alphabet?;a
+What is the capital of Australia?;Canberra
+What language is spoken in Mexico?;Spanish
