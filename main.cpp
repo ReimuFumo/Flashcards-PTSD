@@ -4,6 +4,9 @@
 #include <sstream>
 #include <vector>
 #include <utility>
+#include <algorithm>
+#include <limits>
+#include <random>
 
 class Flashcards
 {
@@ -36,13 +39,13 @@ void Flashcards::welcome()
     std::cout << "If you do not know how to create one, please refer to the help manual. Enter 'help' to access the manual." << "\n\n";
     
     std::cout << "Enter command: ";
-    std::cin >> action;
+    std::getline(std::cin, action);
     while (true)
     {
         if (action == "q" || action == "help" || action == "select") break;
         std::cout << "Invalid input! Try again.\n";
         std::cout << "Enter command: ";
-        std::cin >> action;
+        std::getline(std::cin, action);
     }
     std::cout << "\n";
 
@@ -63,7 +66,7 @@ void Flashcards::help()
     std::cout << "Enter 'back' to return." << "\n\n";
 
     std::cout << "Enter command: ";
-    std::cin >> action;
+    std::getline(std::cin, action);
     std::cout << "\n";
 
     while (true)
@@ -72,7 +75,7 @@ void Flashcards::help()
 
         std::cout << "Invalid input! Try again.\n";
         std::cout << "Enter command: ";
-        std::cin >> action;
+        std::getline(std::cin, action);
     }
 }
 
@@ -84,7 +87,8 @@ void Flashcards::selectFile()
     while (true)
     {
         std::cout << "Enter the file name or 'back' to return: ";
-        std::cin >> filename;
+        std::getline(std::cin, filename);
+        std::cout << "\n";
 
         if (filename == "back") return; 
         else
@@ -117,25 +121,67 @@ void Flashcards::insertFlashcards(const std::string& filename)
         }
     }
 
-    std::cout << "Enter 'y' to revise the flashcards or 'back' to return." << "\n\n";
+    std::cout << "Enter 'y' to revise inserted flashcards or 'back' to return." << "\n\n";
     std::cout << "Enter command: ";
-    std::cin >> action;
+    std::getline(std::cin, action);
 
     while (true)
     {
         if (action == "y" || action == "back") break;
         std::cout << "Invalid input! Try again.\n";
         std::cout << "Enter command: ";
-        std::cin >> action;
+        std::getline(std::cin, action);
     }
     std::cout << "\n";
 
     if (action == "y") beginRevision();
 }
 
+// Beginning of revision/practice session 
 void Flashcards::beginRevision()
 {
-    return; // NOT YET IMPLEMENTED
+    // Randomize flashcard order or not
+    std::string randomOrNot;
+    std::cout << "Would you like the flashcards to be presented in random order? Enter 'y' for yes or 'n' for no.\n\n";
+    std::getline(std::cin, randomOrNot);
+
+    if (randomOrNot == "y") std::shuffle(flashcard.begin(), flashcard.end(), std::mt19937(std::random_device{}())); // Randomizes flashcard vector
+    else std::cout << "Randomizing the flashcards...\n\n";
+
+    // Begin practice session
+    std::cout << "Starting flashcard practice...\n";
+    std::cout << "If you wish to leave the practice session, enter 'back'.\n\n";
+
+    size_t index = 0;
+    while (!flashcard.empty() && index < flashcard.size())
+    {
+        std::string question = flashcard[index].first;
+        std::string answer = flashcard[index].second;
+        std::string userInput;
+        
+        std::cout << "Q: " << question << "\n"; // Present question
+        std::cout << "> (Press enter to see answer)"; // Press enter key to show answer
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Uses newline to show the answer (enter makes newline)
+        std::cout << "A: " << answer << "\n\n"; // Present answer
+        std::cout << "[Enter '1' if remembered or '2' if forgotten]\n\n";
+        std::getline(std::cin, userInput);
+        std::cout << "\n";
+
+        // Give user choice to leave current practice session and return to the welcome page
+        if (userInput == "back") { std::cout << "Exiting practice session...\n\n"; break; }
+        else if (userInput == "1") flashcard.erase(flashcard.begin() + index);
+        else if (userInput == "2")
+        {
+            // If user picks '2' for forgotten, sends the flashcard to the back of the vector
+            flashcard.push_back({question, answer});
+            flashcard.erase(flashcard.begin() + index);
+        }
+        else std::cout << "Invalid input! Try again.\n";
+
+        // Presented when user gets through all the flashcards
+        if (flashcard.empty()) { std::cout << "\nWoohoo! All cards remembered! Well done!\n\n"; break; }
+    }
+    index++;
 }
 
 // Main
