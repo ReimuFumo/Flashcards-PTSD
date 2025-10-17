@@ -1,5 +1,13 @@
 # Flashcards-PTSD
+---
+## James Lee :a196484
+- RevisionCards : Created the functions for cycling through the flashcards 
+- Statistics : Showed the amount of rights and wrongs after each cycle
+## Blake Cross : a1921198
+- Folders : Allow each flashcard to be sorted
+- Readme : Constructed the Readme
 
+---
 ## Scope
 The flashcard application is designed to help users study efficiently using information memorisation techniques. Users can **insert, view, edit, and delete flashcards**, with each one containing information on any topic. Flashcards can be organised into **groups and folders**, giving users freedom to customise their study sessions.  
 
