@@ -11,16 +11,6 @@ Users can choose to have the flashcards presented **randomly** or **sequentially
 
 ---
 
-## Modifications to the Scope
-To track correctness:  
-
-- After viewing a flashcard, users are prompted to enter:  
-  - `1` → Correct  
-  - `2` → Incorrect/forgotten  
-- If a flashcard is answered incorrectly or forgotten, it is **added back to the start** of the review session so the user can attempt it again.
-
----
-
 ## Getting Started
 
 To get started, download or clone the repo:
@@ -70,3 +60,16 @@ The planet closest to the Sun?;Mercury
 - Revise flashcards in random or sequential order
 - Mark answers as correct or incorrect
 - Track progress and statistics during your study session
+- 
+---
+
+## Modifications to the Scope
+To track correctness:  
+- After viewing a flashcard, users are prompted to enter:  
+  - `1` → Remembered  
+  - `2` → Forgotten  
+- If a flashcard is forgotten, it is **added back to the start** of the review session so the user can attempt it again.
+- **This is different compared to our scope before, instead of having "Correct", "Incorrect" and "Forgetten"; it's only "Remembered" and "Forgetten.**
+- Having both "Forgetten" and "Incorrect" is redundant so we decided to merge them together
+
+---
