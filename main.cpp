@@ -36,16 +36,17 @@ class Flashcards
 
 
     public:
-    void welcome(); // Welcome/Starting page
+    void welcome(); // Welcome/starting page
     void help(); // Displays help manual when users need it
     void selectFile(); // Allows users to select a specific file
+    void selectFolder(); // allows users to select a specific folder
 
     private:
-    void insertFlashcards(std::ifstream& file); // Insert flashcards from file into system
-    void beginRevision(); // Starts session for reviewing flashcards
-    void beginFolderRevision(const std::string& folderName); // 
+    void insertFlashcards(std::ifstream& file); // Insert flashcards from file into system 
+    void beginRevision(const std::string& folderName); // Starts session for reviewing flashcards
 };
 
+// ------------------------- WELCOME() -------------------------
 // The welcome page of the Flashcards Application
 void Flashcards::welcome()
 {
@@ -65,7 +66,7 @@ void Flashcards::welcome()
     while (true)
     {
         if (action == "q" || action == "help" || action == "select") break;
-        std::cout << "Invalid input! Try again.\n";
+        std::cout << "Invalid input! Try again.\n\n";
         std::cout << ">> ";
         std::getline(std::cin, action);
     }
@@ -76,6 +77,7 @@ void Flashcards::welcome()
     else if (action == "select") selectFile();
 }
 
+// ------------------------- HELP() -------------------------
 // Help manual to answer questions the user may have
 void Flashcards::help()
 {
@@ -89,20 +91,17 @@ void Flashcards::help()
     std::cout << "Each line holds a single question and answer." << "\n\n";
     std::cout << "Enter 'back' to return." << "\n\n";
 
-    std::cout << ">> ";
-    std::getline(std::cin, action); // Uses getline() to avoid whitespace issues
-    std::cout << "\n";
-
     while (true)
     {
-        if (action == "back") break;
-
-        std::cout << "Invalid input! Try again.\n";
         std::cout << ">> ";
-        std::getline(std::cin, action);
+        std::getline(std::cin, action); // Uses getline() to avoid whitespace issues
+
+        if (action == "back") return;
+        else std::cout << "Invalid input! Try again.\n\n";
     }
 }
 
+// ------------------------- SELECTFILE() -------------------------
 // Ask user for file they want to use
 void Flashcards::selectFile()
 {
@@ -135,12 +134,15 @@ void Flashcards::selectFile()
     }
 }
 
+// ------------------------- INSERTFLASHCARDS() -------------------------
+// Inserts flashcards from file into application
 void Flashcards::insertFlashcards(std::ifstream& file)
 {
     std::string line;
     std::string currentFolder = "General"; // default folder
     std::string action;
 
+    // Finds folders and contents in file, push them into vector
     while (std::getline(file, line))
     {
         if (line.empty()) continue;
@@ -160,78 +162,92 @@ void Flashcards::insertFlashcards(std::ifstream& file)
         }
     }
 
-    std::cout << "Enter 'y' to revise inserted flashcards or 'back' to return." << "\n\n";
-    std::cout << ">> ";
-    std::getline(std::cin, action);
-
     while (true)
     {
-        if (action == "y" || action == "back") break;
-        std::cout << "Invalid input! Try again.\n";
+        std::cout << "Enter 'y' to choose the flashcards in this file or 'back' to return." << "\n\n";
         std::cout << ">> ";
         std::getline(std::cin, action);
+        std::cout << "\n";
+
+        if (action == "y") selectFolder(); // Proceeds to selectFolder()
+        else if (action == "back") return;
+        else std::cout << "Invalid input! Try again.\n";
     }
     std::cout << "\n";
-
-    if (action == "y") beginRevision();
 }
 
-// Beginning of revision/practice session
-void Flashcards::beginRevision()
+// ------------------------- SELECTFOLDER() -------------------------
+// Asks user to review a specific folder or all
+void Flashcards::selectFolder()
 {
     std::string action;
 
-    std::cout << "Folders found: \n";
-    for (auto &folder: folders)
-        std::cout << " - " << folder.first << " (" << folder.second.size() << "cards) \n";
+    // Lists existing folders in file, including number of flashcards in each
+    std::cout << "Folders: \n";
+    for (auto &folder: folders) std::cout << " - " << folder.first << " (" << folder.second.size() << " flashcards)\n";
     
+    // Display multiple options for user to choose
     std::cout << "\nOptions:\n";
-    std::cout << "  all   - Revise all folders combined\n";
-    std::cout << "  [name]- Revise a specific folder\n";
-    std::cout << "  back  - Return to main menu\n\n";
-    std::cout << "Enter command: ";
+    std::cout << "  'all'         - Review all folders\n"; // Review every flashcard in every folder (combination of all)
+    std::cout << "  [folder name] - Review a specific folder\n"; // Review flashcards in a specific folder
+    std::cout << "  'back'        - Return\n\n"; // Return
+    std::cout << ">> ";
     std::getline(std::cin, action);
     std::cout << "\n";
 
-    if(action == "back") return;
-    else if(action == "all") {
-        std::vector<std::pair<std::string,std::string>> allCards;
-        for(auto &f : folders)
-            allCards.insert(allCards.end(), f.second.begin(), f.second.end());
-        std::swap(folders["All"], allCards);
-        beginFolderRevision("All");
-    }
-    else if(folders.find(action) != folders.end()){
-        beginFolderRevision(action);
-    }
-    else {
-        std::cout << "Invalid Folder name! \n";
-    }
+    while (true)
+    {
+        if (action == "back") return;
+        else if (action == "all")
+        {
+            // Inserts every single flashcard into a vector for review
+            std::vector<std::pair<std::string,std::string>> allCards;
 
+            for (auto &f : folders) allCards.insert(allCards.end(), f.second.begin(), f.second.end());
+            std::swap(folders["All"], allCards);
+
+            beginRevision("All");
+            return;
+        }
+        else if (folders.find(action) != folders.end()) break;
+        else std::cout << "Invalid input! Try again!\n\n";
+        std::cout << ">> ";
+        std::getline(std::cin, action);
+        std::cout << "\n";
+    }
+    beginRevision(action);
 }
 
-
+// ------------------------- BEGINREVISION() -------------------------
 // Beginning of revision/practice session
-void Flashcards::beginFolderRevision(const std::string& folderName)
+void Flashcards::beginRevision(const std::string& folderName)
 {
+    // Notifies user if chosen folder has no flashcards
     auto &cards = folders[folderName];
     if (cards.empty()) {
         std::cout << "No flashcards in this folder.\n";
         return;
     }
 
-    // Randomize flashcard order or not
     std::string randomOrNot;
-    std::cout << "Would you like the flashcards to be presented in random order? Enter 'y' for yes or 'n' for no.\n\n";
-    std::cout << ">> ";
-    std::getline(std::cin, randomOrNot);
-    std::cout << "\n";
 
     // Randomizes vector that stores the flashcards
-    if (randomOrNot == "y")
+    while (true)
     {
-        std::shuffle(cards.begin(), cards.end(), std::mt19937(std::random_device{}())); 
-        std::cout << "* Flashcards have been randomized! *\n\n";
+        // Give users choice to randomie or not
+        std::cout << "Would you like the flashcards to be presented in random order? Enter 'y' for yes or 'n' for no.\n\n";
+        std::cout << ">> ";
+        std::getline(std::cin, randomOrNot);
+        std::cout << "\n";
+
+        if (randomOrNot == "y")
+        {
+            std::shuffle(cards.begin(), cards.end(), std::mt19937(std::random_device{}())); // Randomizer algorithm
+            std::cout << "* Flashcards have been randomized! *\n\n";
+            break;
+        }
+        else if (randomOrNot == "n") break;
+        else std::cout << "Invalid input! Try again.\n";
     }
 
     // Begin practice session
@@ -254,14 +270,14 @@ void Flashcards::beginFolderRevision(const std::string& folderName)
         std::cout << "   (Press Enter to show answer) \n"; // Press enter key to show answer
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Uses newline to show the answer (Enter makes newline)
         std::cout << "A: " << answer << "\n\n"; // Present answer
-        std::cout << "[Enter '1' if remembered or '2' if forgotten, or 'back' to quit]\n";
+        std::cout << "[Enter '1' if remembered, '2' if forgotten, or 'back' to return]\n";
         std::getline(std::cin, userInput);
         std::cout << "\n";
 
         // Give user choice to leave current practice session and return to the welcome page
         if (userInput == "back")
         {
-            stats.stopTimer();
+            stats.stopTimer(); // If user returns mid-session, stop timer
             std::cout << "Exiting practice session...\n\n";
             break;
         }
@@ -298,7 +314,7 @@ void Flashcards::beginFolderRevision(const std::string& folderName)
     std::cout << "===========================\n\n";
 }
 
-// Main
+// ------------------------- MAIN() -------------------------
 int main()
 {
     Flashcards app;
