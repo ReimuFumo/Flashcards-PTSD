@@ -17,7 +17,22 @@ To track correctness:
 - After viewing a flashcard, users are prompted to enter:  
   - `1` → Correct  
   - `2` → Incorrect/forgotten  
-- If a flashcard is answered incorrectly or forgotten, it is **added back to the start** of the review session so the user can attempt it again.  
+- If a flashcard is answered incorrectly or forgotten, it is **added back to the start** of the review session so the user can attempt it again.
+
+---
+
+## Getting Started
+
+To get started, download or clone the repo:
+```
+cd flashcards-ptsd
+make
+```
+Or on Windows systems:
+```
+cd flashcards-ptsd
+make win
+```
 
 ---
 
