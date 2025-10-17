@@ -13,13 +13,15 @@ Users can choose to have the flashcards presented **randomly** or **sequentially
 
 ## Getting Started
 
-To get started, download or clone the repo:
+To get started, in terminal:
 ```
+git clone git@github.com:ReimuFumo/flashcards-ptsd.git
 cd flashcards-ptsd
 make
 ```
-Or on Windows systems:
+Or on a Windows CMD:
 ```
+git clone git@github.com:ReimuFumo/flashcards-ptsd.git
 cd flashcards-ptsd
 make win
 ```
