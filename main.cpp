@@ -39,7 +39,7 @@ class Flashcards
     void selectFile(); // Allows users to select a specific file
 
     private:
-    void insertFlashcards(const std::string& filename); // Insert flashcards from file into system
+    void insertFlashcards(std::ifstream& file); // Insert flashcards from file into system
     void beginRevision(); // Starts session for reviewing flashcards
 };
 
@@ -87,7 +87,7 @@ void Flashcards::help()
     std::cout << "Enter 'back' to return." << "\n\n";
 
     std::cout << ">> ";
-    std::getline(std::cin, action);
+    std::getline(std::cin, action); // Uses getline() to avoid whitespace issues
     std::cout << "\n";
 
     while (true)
@@ -124,17 +124,16 @@ void Flashcards::selectFile()
             if (!file) std::cout << "File \"" << filename << "\" was not found. Please enter a valid file name.\n";
             else
             {
-                std::cout << "File loaded successfully!\n\n";
-                insertFlashcards(filename);
+                std::cout << "* File loaded successfully! *\n\n";
+                insertFlashcards(file);
                 break;
             }
         }
     }
 }
 
-void Flashcards::insertFlashcards(const std::string& filename)
+void Flashcards::insertFlashcards(std::ifstream& file)
 {
-    std::ifstream file(filename);
     std::string line;
     std::string action;
 
@@ -196,15 +195,20 @@ void Flashcards::beginRevision()
         std::string userInput;
         
         std::cout << "Q: " << question << "\n"; // Present question
-        std::cout << "   (Press enter to see answer) \n"; // Press enter key to show answer
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Uses newline to show the answer (enter makes newline)
+        std::cout << "   (Press Enter to show answer) \n"; // Press enter key to show answer
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Uses newline to show the answer (Enter makes newline)
         std::cout << "A: " << answer << "\n\n"; // Present answer
         std::cout << "[Enter '1' if remembered or '2' if forgotten]\n\n";
         std::getline(std::cin, userInput);
         std::cout << "\n";
 
         // Give user choice to leave current practice session and return to the welcome page
-        if (userInput == "back") { std::cout << "Exiting practice session...\n\n"; break; }
+        if (userInput == "back")
+        {
+            stats.stopTimer();
+            std::cout << "Exiting practice session...\n\n";
+            break;
+        }
         else if (userInput == "1")
         {
             flashcard.erase(flashcard.begin() + index);
@@ -225,8 +229,6 @@ void Flashcards::beginRevision()
         if (flashcard.empty()) { std::cout << "\nWoohoo! All cards remembered! Well done!\n\n"; break; }
     }
 
-    index++;
-
     stats.stopTimer(); // Stop timer
 
     // Display session summary/statistics
@@ -245,8 +247,8 @@ int main()
 {
     Flashcards app;
 
+    // Run the flashcards application
     while (true) app.welcome(); // Calls welcome() and uses while loop to prevent adding additional frames to call stack
-
 
     return 0;
 }
