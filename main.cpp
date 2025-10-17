@@ -225,7 +225,7 @@ void Flashcards::beginRevision()
         }
         else { std::cout << "Invalid input! Try again.\n"; continue; }
 
-        // Congratulates when user gets through all the flashcards
+        // Congratulates user when all flashcards have been reviewed
         if (flashcard.empty()) { std::cout << "\nWoohoo! All cards remembered! Well done!\n\n"; break; }
     }
 
