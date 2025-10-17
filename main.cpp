@@ -7,13 +7,21 @@
 #include <algorithm>
 #include <limits>
 #include <random>
+#include <map>
 
 class Flashcards
 {
-    // Stored for functions like showing questions and answers
-    std::vector<std::pair<std::string, std::string>> flashcard;
+    // // // Stored for functions like showing questions and answers
+    // std::vector<std::pair<std::string, std::string>> flashcard;
+    // std::string currQuestion;
+    // std::string currAnswer;
+
+
+    // Map each folder to its flashcards
+    std::map<std::string, std::vector<std::pair<std::string, std::string>>> folders;
     std::string currQuestion;
     std::string currAnswer;
+
 
     public:
     void welcome();
@@ -23,6 +31,7 @@ class Flashcards
     private:
     void insertFlashcards(const std::string& filename);
     void beginRevision();
+    void beginFolderRevision(const std::string& folderName);
 };
 
 // The welcome page of the Flashcards Application
@@ -30,7 +39,7 @@ void Flashcards::welcome()
 {
     std::string action;
 
-    flashcard.clear(); // Prevents duplication of flashcards when inserting from file
+    folders.clear(); // Prevents duplication of flashcards when inserting from file
 
     std::cout << "***************************\n";
     std::cout << "Welcome to PTSD Flashcards!" << "\n";
@@ -109,15 +118,25 @@ void Flashcards::insertFlashcards(const std::string& filename)
 {
     std::ifstream file(filename);
     std::string line;
+    std::string currentFolder = "General"; // default folder
     std::string action;
 
     while (std::getline(file, line))
     {
-        std::stringstream ss(line);
+        if (line.empty()) continue;
         
-        if (std::getline(ss, currQuestion, ';') && std::getline(ss, currAnswer))
-        {
-            if (!currQuestion.empty() && !currAnswer.empty()) flashcard.push_back({currQuestion, currAnswer});
+        if(line[0] == '-'){
+            currentFolder = line.substr(1);
+            currentFolder.erase(0, currentFolder.find_first_not_of(" \t"));
+            folders[currentFolder];
+        }
+        else {
+            std::stringstream ss(line);
+            if (std::getline(ss, currQuestion, ';') && std::getline(ss, currAnswer))
+            {
+                if (!currQuestion.empty() && !currAnswer.empty())
+                    folders[currentFolder].push_back({currQuestion, currAnswer});
+            }
         }
     }
 
@@ -137,15 +156,57 @@ void Flashcards::insertFlashcards(const std::string& filename)
     if (action == "y") beginRevision();
 }
 
-// Beginning of revision/practice session 
+//Menu for flashcards
 void Flashcards::beginRevision()
 {
+    std::string action;
+
+    std::cout << "Folders found: \n";
+    for (auto &folder: folders)
+        std::cout << " - " << folder.first << " (" << folder.second.size() << "cards) \n";
+    
+    std::cout << "\nOptions:\n";
+    std::cout << "  all   - Revise all folders combined\n";
+    std::cout << "  [name]- Revise a specific folder\n";
+    std::cout << "  back  - Return to main menu\n\n";
+    std::cout << "Enter command: ";
+    std::getline(std::cin, action);
+    std::cout << "\n";
+
+    if(action == "back") return;
+    else if(action == "all") {
+        std::vector<std::pair<std::string,std::string>> allCards;
+        for(auto &f : folders)
+            allCards.insert(allCards.end(), f.second.begin(), f.second.end());
+        std::swap(folders["All"], allCards);
+        beginFolderRevision("All");
+    }
+    else if(folders.find(action) != folders.end()){
+        beginFolderRevision(action);
+    }
+    else {
+        std::cout << "Invalid Folder name! \n";
+    }
+
+}
+
+
+// Beginning of revision/practice session
+void Flashcards::beginFolderRevision(const std::string& folderName)
+{
+    auto &cards = folders[folderName];
+    if (cards.empty()) {
+        std::cout << "No flashcards in this folder.\n";
+        return;
+    }
+
     // Randomize flashcard order or not
     std::string randomOrNot;
     std::cout << "Would you like the flashcards to be presented in random order? Enter 'y' for yes or 'n' for no.\n\n";
     std::getline(std::cin, randomOrNot);
+    std::cout <<"\n";
 
-    if (randomOrNot == "y") std::shuffle(flashcard.begin(), flashcard.end(), std::mt19937(std::random_device{}())); // Randomizes flashcard vector
+    if (randomOrNot == "y") std::shuffle(cards.begin(), cards.end(), std::mt19937(std::random_device{}())); // Randomizes flashcard vector
     else std::cout << "Randomizing the flashcards...\n\n";
 
     // Begin practice session
@@ -153,33 +214,35 @@ void Flashcards::beginRevision()
     std::cout << "If you wish to leave the practice session, enter 'back'.\n\n";
 
     size_t index = 0;
-    while (!flashcard.empty() && index < flashcard.size())
+    while (!cards.empty() && index < cards.size())
     {
-        std::string question = flashcard[index].first;
-        std::string answer = flashcard[index].second;
+        const std::pair<std::string, std::string>& card = cards[index];
+        const std::string& question = card.first;
+        const std::string& answer = card.second;
+
         std::string userInput;
         
         std::cout << "Q: " << question << "\n"; // Present question
         std::cout << "> (Press enter to see answer)"; // Press enter key to show answer
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Uses newline to show the answer (enter makes newline)
         std::cout << "A: " << answer << "\n\n"; // Present answer
-        std::cout << "[Enter '1' if remembered or '2' if forgotten]\n\n";
+        std::cout << "[Enter '1' if remembered or '2' if forgotten, or 'back' to quit]\n";
         std::getline(std::cin, userInput);
         std::cout << "\n";
 
         // Give user choice to leave current practice session and return to the welcome page
         if (userInput == "back") { std::cout << "Exiting practice session...\n\n"; break; }
-        else if (userInput == "1") flashcard.erase(flashcard.begin() + index);
+        else if (userInput == "1") cards.erase(cards.begin() + index);
         else if (userInput == "2")
         {
             // If user picks '2' for forgotten, sends the flashcard to the back of the vector
-            flashcard.push_back({question, answer});
-            flashcard.erase(flashcard.begin() + index);
+            cards.push_back({question, answer});
+            cards.erase(cards.begin() + index);
         }
         else std::cout << "Invalid input! Try again.\n";
 
         // Presented when user gets through all the flashcards
-        if (flashcard.empty()) { std::cout << "\nWoohoo! All cards remembered! Well done!\n\n"; break; }
+        if (cards.empty()) { std::cout << "\nWoohoo! All cards remembered! Well done!\n\n"; break; }
     }
     index++;
 }
