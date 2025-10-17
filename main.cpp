@@ -88,7 +88,8 @@ void Flashcards::help()
     std::cout << "            =============================\n";
     std::cout << "In order to insert your own questions and answers, you must first create a text file." << "\n";
     std::cout << "In the file, type in a question followed by ';' and then your answer. Example: What is the first letter of the alphabet?;a" << "\n";
-    std::cout << "Each line holds a single question and answer." << "\n\n";
+    std::cout << "Each line holds a single question and answer." << "\n";
+    std::cout << "If you want to store these flashcards in folders, add '-' at the top, followed by a name.\n\n"
     std::cout << "Enter 'back' to return." << "\n\n";
 
     while (true)
